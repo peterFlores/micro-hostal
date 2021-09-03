@@ -6,5 +6,7 @@ export class Capacity {
     };
     affi_benefits: {
         rules: string[]
+    /*  rooms: number,
+        discount: number,*/
     }
 }
