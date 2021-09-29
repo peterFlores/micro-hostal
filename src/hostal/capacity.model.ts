@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+import { Rule } from "./rule.model";
 export class Capacity {
     type: string;
     capacity: {
@@ -5,6 +7,6 @@ export class Capacity {
         childs: number,
     };
     affi_benefits: {
-        rules: string[]
+        rules: Rule[]
     }
 }

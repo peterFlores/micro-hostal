@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export class PriceList {
     affi_type: string;
     prices: {

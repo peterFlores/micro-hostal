@@ -1,10 +1,11 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HostalModule } from './hostal/hostal.module';
-import { CategoriaService } from './src/hostal/categoria/categoria.service';
-import { CategoriaController } from './categoria/categoria.controller';
+//import { CategoriaService } from './src/hostal/categoria/categoria.service';
+//import { CategoriaController } from './categoria/categoria.controller';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { CategoriaController } from './categoria/categoria.controller';
       autoCreate: true
     })
   ],
-  controllers: [AppController, CategoriaController],
-  providers: [AppService, CategoriaService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
