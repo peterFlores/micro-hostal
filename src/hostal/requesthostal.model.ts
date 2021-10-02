@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 export class RequestHostal {
-    date_arrivals: Date;
+    date_arrival: Date;
     date_departure: Date;
     adults: number;
     childs: number;

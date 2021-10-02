@@ -6,6 +6,7 @@ import { PriceList } from "./price_list.model";
 
 export type HostalDocument = Hostal & Document;
 @Schema()
+
 export class Hostal {
     @Prop()
     name: string;

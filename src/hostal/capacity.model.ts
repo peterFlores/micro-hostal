@@ -6,6 +6,7 @@ export class Capacity {
         adults: number,
         childs: number,
     };
+    rooms: number;
     affi_benefits: {
         rules: Rule[]
     }
