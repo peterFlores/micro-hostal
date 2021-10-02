@@ -4,6 +4,6 @@ export class RequestHostal {
     date_departure: Date;
     adults: number;
     childs: number;
-    name_hostal: string;
+    id_hostal: string;
     affi_type: number;
 }

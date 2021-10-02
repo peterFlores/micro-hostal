@@ -11,6 +11,8 @@ import { RequestHostal } from "./requesthostal.model";
 import { HostalArray } from "./hostalarray.model";
 import { Room, RoomDocument } from "./room.model";
 import { async } from 'rxjs';
+import { Console } from 'console';
+import * as moment from 'moment';
 
 @Injectable()
 export class HostalService  {
@@ -94,14 +96,74 @@ export class HostalService  {
     }
 
     async returnhostaldata(requesthostal: RequestHostal): Promise<HostalArray>{
-
+        const hostal = await this.hostalModel.findById(requesthostal.id_hostal).exec();
+        const types_hostal = hostal.capacity_and_benefits
         const Days = ['Sunday','Monday','Tuesday','Wesnesday','Thursday','Friday','Saturday'];
-        const FirstDay = new Date(requesthostal.date_arrival).getDay();
-        const LastDay = new Date(requesthostal.date_departure).getDay();
-        const nombredia = Days[FirstDay];
+        const FDay = new Date(requesthostal.date_arrival).getDay();
+        const LDay = new Date(requesthostal.date_departure).getDay();
 
+        const FirstDay = Days[FDay];
+        const LastDay = Days[LDay];
+
+        let Date1 = moment(requesthostal.date_arrival);
+        let Date2 = moment(requesthostal.date_departure);
+
+        const Date_Diff = Date2.diff(Date1, 'days') - 1
+        let S_Day
+        
+        const ArrayDays = []
+
+        ArrayDays.push(FirstDay)
+        if (FDay == 6) { S_Day = 0 } else { S_Day = FDay + 1 }
+        for (let i = 0 ; i < Date_Diff; i++) {
+            ArrayDays.push(Days[S_Day])
+            if (S_Day == 6) { S_Day = -1 } 
+            S_Day++
+        }
+        ArrayDays.push(LastDay)
+
+        ArrayDays.forEach(Day => {
+            console.log(Day)
+        });
 
         
+        let No_RoomsA
+        let No_RoomsC
+        let No_Rooms
+
+        types_hostal.forEach(type => {
+            let adults = requesthostal.adults
+            let childs = requesthostal.childs
+            No_RoomsA = 0
+            No_RoomsC = 0
+            do {
+                if(type.capacity.adults > adults){No_RoomsA = 1
+                    break}
+                adults = adults - type.capacity.adults
+                if(adults === 0){No_RoomsA++
+                    break}
+                No_RoomsA++
+                if(adults < type.capacity.adults){No_RoomsA++
+                    break}
+            } while ( adults != 0);
+            do {
+                if(type.capacity.childs > childs){No_RoomsC = 1
+                    break}
+                childs = childs - type.capacity.childs
+                if(childs === 0){ No_RoomsC++
+                    break}
+                No_RoomsC++
+                if(childs < type.capacity.childs){No_RoomsC++
+                    break}
+            } while ( childs != 0);
+            if (No_RoomsA == No_RoomsC){No_Rooms = No_RoomsA}
+            if (No_RoomsA > No_RoomsC){No_Rooms = No_RoomsA}
+            if (No_RoomsA < No_RoomsC){No_Rooms = No_RoomsC}
+            console.log(type.type)
+            console.log('NUMERO DE CUARTOS')
+            console.log(No_Rooms)
+        });
+
         return
     }
 

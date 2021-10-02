@@ -20,7 +20,7 @@ export class HostalController {
 
     @Post('reservation')
     async returnhostaldata(@Body() model: RequestHostal) {
-        return //await this.service.returnhostaldata(model);
+        return await this.service.returnhostaldata(model);
     }
 
     @Post()
@@ -30,7 +30,6 @@ export class HostalController {
 
     @Put(':id')
     async update(@Param('id') id: string, @Body() model: Hostal) {
-        
         return await this.service.update(id, model);
     }
 
