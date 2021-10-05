@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-array-constructor */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable prefer-const */
@@ -139,13 +140,14 @@ export class HostalService  {
         let No_Rooms
         let No_Rooms_Affi
         let Total_Price, Total_Room, Total_Room_Affi
+        Hostal_Array.Capacity_Array = new Array()
 
         types_hostal.forEach(async type => {
             const hostal_rules = type.affi_benefits
 
             if (Array.isArray(hostal_rules)) {
                 hostal_rules.forEach(rules => {
-
+                    
                     rules.rules.forEach(async rule => {
                         const rules = await this.ruleModel.findOne({name: rule, affi_type: requesthostal.affi_type}).exec();
                         Total_Room_Affi = 0
@@ -153,7 +155,6 @@ export class HostalService  {
                         Total_Price = 0
 
                         if (rules == null) {
-                            let ArrayTypeHostal = new HostalReservation
                             let adults = requesthostal.adults
                             let childs = requesthostal.childs
                             No_RoomsA = 0
@@ -185,9 +186,7 @@ export class HostalService  {
                             if (No_RoomsA < No_RoomsC){No_Rooms = No_RoomsC}
                             
                             console.log("TIPO DE HABITACION " + type.type)
-                            ArrayTypeHostal.type = type.type
                             console.log('NUMERO DE CUARTOS EN TOTAL ' + No_Rooms)
-                            ArrayTypeHostal.rooms = No_Rooms
                             No_Rooms_Affi = 0
                             console.log('NUMERO DE CUARTOS SIN AFFI TYPE ' + No_Rooms)
                             console.log('NUMERO DE CUARTOS Con AFFI TYPE ' + No_Rooms_Affi)
@@ -237,17 +236,12 @@ export class HostalService  {
                                         Total_Price = No_Rooms * Total_Room
                                         console.log('TOTAL A PAGAR POR CUARTO ' + Total_Room)
                                         console.log('TOTAL GENERAL ' + Total_Price)
-                                        ArrayTypeHostal.total_price = Total_Price
-                                        if (Array.isArray(ArrayTypeHostal)) {
-                                            Hostal_Array.Capacity_Array.push(ArrayTypeHostal)
-                                        }
-                                        
+                                        Hostal_Array.Capacity_Array.push({type: type.type, rooms: No_Rooms, total_price: Total_Price})
 
                                     }
                                 });
                             }
                         }else{
-                            let ArrayTypeHostal = new HostalReservation
                             let adults = requesthostal.adults
                             let childs = requesthostal.childs
                             No_RoomsA = 0
@@ -279,9 +273,7 @@ export class HostalService  {
                             if (No_RoomsA < No_RoomsC){No_Rooms = No_RoomsC}
 
                             console.log("TIPO DE HABITACION " + type.type)
-                            ArrayTypeHostal.type = type.type
                             console.log('NUMERO DE CUARTOS EN TOTAL ' + No_Rooms)
-                            ArrayTypeHostal.rooms = No_Rooms
                             No_Rooms_Affi = rules.amount
                             let New_No_Rooms = No_Rooms - No_Rooms_Affi
                             console.log('NUMERO DE CUARTOS SIN AFFI TYPE ' + New_No_Rooms)
@@ -376,15 +368,16 @@ export class HostalService  {
                             console.log('TOTAL A PAGAR POR CUARTO NO AFFI ' + Total_Room)
                             console.log('TOTAL A PAGAR POR CUARTO AFFI ' + Total_Room_Affi)
                             console.log('TOTAL GENERAL ' + Total_Price)
-                            ArrayTypeHostal.total_price = Total_Price
-
-                            Hostal_Array.Capacity_Array.push(ArrayTypeHostal)
+                            Hostal_Array.Capacity_Array.push({type: type.type, rooms: No_Rooms, total_price: Total_Price})
+                            
                         }
-                    });
+                        console.log(Hostal_Array)
+                    }); 
                 });
-            }            
+            }           
         });
-        return Hostal_Array
+
+        return 
     }
 
 }
