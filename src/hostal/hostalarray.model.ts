@@ -1,4 +1,14 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/ban-types */
+
 export class HostalArray {
-    xd: string;
+    date_arrival: Date;
+    date_departure: Date;
+    adults: Number;
+    childs: Number;
+    Capacity_Array: {
+        type: string;
+        rooms: Number;
+        total_price: Number;
+    }[]
 }

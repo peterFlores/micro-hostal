@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Rule } from "./rule.model";
+/* eslint-disable @typescript-eslint/ban-types */
+
 export class Capacity {
     type: string;
     capacity: {
@@ -8,6 +9,6 @@ export class Capacity {
     };
     rooms: number;
     affi_benefits: {
-        rules: Rule[]
+        rules: String[];
     }
 }
