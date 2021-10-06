@@ -1,5 +1,5 @@
 export class Capacity {
-    type: string;
+    type: string; 
     capacity: {
         adults: number,
         childs: number,

@@ -10,12 +10,10 @@ export class HostalController {
     async findAll() {
         return await this.service.findAll();
     }
-
     @Post()
     async create(@Body() model: Hostal) {
         return await this.service.create(model);
     }
-
     @Put(':id')
     async update(@Param('id') id: string, @Body() model: Hostal) {
         return await this.service.update(id, model);
