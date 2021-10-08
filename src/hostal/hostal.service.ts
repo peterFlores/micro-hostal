@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-array-constructor */
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-array-constructor */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -16,6 +16,7 @@ import { Rule, RuleDocument} from "./rule.model";
 import { async } from 'rxjs';
 import * as moment from 'moment';
 import { HostalReservation } from './hostal_reservation.model';
+import { SSL_OP_EPHEMERAL_RSA } from 'constants';
 
 @Injectable()
 export class HostalService  {
@@ -139,16 +140,18 @@ export class HostalService  {
         let No_RoomsC
         let No_Rooms
         let No_Rooms_Affi
+        let contador = 0
         let Total_Price, Total_Room, Total_Room_Affi
         Hostal_Array.Capacity_Array = new Array()
 
-        types_hostal.forEach(async type => {
+        await Promise.all(types_hostal.map(async type => {
             const hostal_rules = type.affi_benefits
-
+            
             if (Array.isArray(hostal_rules)) {
-                hostal_rules.forEach(rules => {
-                    
-                    rules.rules.forEach(async rule => {
+                
+                await Promise.all(Object.keys(hostal_rules).map( async rules_h => {
+
+                    await Promise.all(Object.keys(rules_h).map(async (rule) =>{
                         const rules = await this.ruleModel.findOne({name: rule, affi_type: requesthostal.affi_type}).exec();
                         Total_Room_Affi = 0
                         Total_Room = 0
@@ -237,6 +240,7 @@ export class HostalService  {
                                         console.log('TOTAL A PAGAR POR CUARTO ' + Total_Room)
                                         console.log('TOTAL GENERAL ' + Total_Price)
                                         Hostal_Array.Capacity_Array.push({type: type.type, rooms: No_Rooms, total_price: Total_Price})
+                                        contador = contador + 1
 
                                     }
                                 });
@@ -369,15 +373,14 @@ export class HostalService  {
                             console.log('TOTAL A PAGAR POR CUARTO AFFI ' + Total_Room_Affi)
                             console.log('TOTAL GENERAL ' + Total_Price)
                             Hostal_Array.Capacity_Array.push({type: type.type, rooms: No_Rooms, total_price: Total_Price})
-                            
                         }
-                        console.log(Hostal_Array)
-                    }); 
-                });
-            }           
-        });
-
-        return 
+                    }))
+                }));
+            }          
+        }));
+        return Hostal_Array
     }
 
 }
+
+
