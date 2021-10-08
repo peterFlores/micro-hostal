@@ -1,7 +1,10 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/ban-types */
 
+import * as mongoose from 'mongoose';
+
 export class Capacity {
+    _id: mongoose.Types.ObjectId;
     type: string;
     capacity: {
         adults: number,
