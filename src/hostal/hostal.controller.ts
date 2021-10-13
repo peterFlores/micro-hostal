@@ -20,6 +20,7 @@ export class HostalController {
 
     @Post('reservation')
     async returnhostaldata(@Body() model: RequestHostal) {
+        console.log(model);
         return await this.service.returnhostaldata(model);
     }
 

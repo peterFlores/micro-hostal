@@ -100,6 +100,7 @@ export class HostalService  {
     }
 
     async returnhostaldata(requesthostal: RequestHostal): Promise<HostalArray>{
+        console.log("etro");
         let Hostal_Array = new HostalArray
         Hostal_Array.date_arrival = requesthostal.date_arrival
         Hostal_Array.date_departure = requesthostal.date_departure
