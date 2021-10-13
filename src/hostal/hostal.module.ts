@@ -13,7 +13,7 @@ import { Rule, RuleSchema } from './rule.model';
       [
         {name: Hostal.name, schema: HostalSchema},
         {name: Room.name, schema: RoomSchema},
-        {name: Rule.name, schema: RuleSchema}
+        {name: Rule.name, schema: RuleSchema},
       ]
     )
   ],
