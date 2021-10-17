@@ -13,10 +13,8 @@ import { RequestHostal } from "./requesthostal.model";
 import { HostalArray } from "./hostalarray.model";
 import { Room, RoomDocument } from "./room.model";
 import { Rule, RuleDocument} from "./rule.model";
-import { async } from 'rxjs';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import { HostalReservation } from './hostal_reservation.model';
 
 @Injectable()
 export class HostalService  {
@@ -141,28 +139,27 @@ export class HostalService  {
         let No_RoomsC
         let No_Rooms
         let No_Rooms_Affi
+        let New_No_Rooms
         let Total_Price, Total_Room, Total_Room_Affi
         Hostal_Array.Capacity_Array = new Array()
 
         await Promise.all(types_hostal.map(async type => {
             const hostal_rules = type.affi_benefits
             
-            if (Array.isArray(hostal_rules)) {
-                
-                await Promise.all(Object.keys(hostal_rules).map( async rules_h => {
-
-                    await Promise.all(Object.keys(rules_h).map(async (rule) =>{
-                        const rules = await this.ruleModel.findOne({name: rule, affi_type: requesthostal.affi_type}).exec();
-                        Total_Room_Affi = 0
-                        Total_Room = 0
-                        Total_Price = 0
-
-                        if (rules == null) {
-                            let adults = requesthostal.adults
-                            let childs = requesthostal.childs
-                            No_RoomsA = 0
-                            No_RoomsC = 0
-                            No_Rooms_Affi = 0
+            if (Array.isArray(hostal_rules)) {                             
+                await Promise.all(hostal_rules.map( async (rules_h) => {
+                    Total_Room_Affi = 0
+                    Total_Room = 0
+                    Total_Price = 0
+                    const rules = await this.ruleModel.findOne({name: rules_h.rules[0], affi_type: requesthostal.affi_type}).exec();
+                        
+                    if (rules == null) {
+                            
+                        let adults = requesthostal.adults
+                        let childs = requesthostal.childs
+                        No_RoomsA = 0
+                        No_RoomsC = 0
+                        No_Rooms_Affi = 0
 
                             do {
                                 if(type.capacity.adults > adults){No_RoomsA = 1
@@ -251,142 +248,147 @@ export class HostalService  {
                             }
                             
                             
+                    }else{
+                        let adults = requesthostal.adults
+                        let childs = requesthostal.childs
+                        No_RoomsA = 0
+                        No_RoomsC = 0
+                        No_Rooms_Affi = 0
+
+                        do {
+                            if(type.capacity.adults > adults){No_RoomsA = 1
+                                break}
+                            adults = adults - type.capacity.adults
+                            if(adults === 0){No_RoomsA++
+                                break}
+                            No_RoomsA++
+                            if(adults < type.capacity.adults){No_RoomsA++
+                                break}
+                        } while ( adults != 0);
+                        do {
+                            if(type.capacity.childs > childs){No_RoomsC = 1
+                                break}
+                            childs = childs - type.capacity.childs
+                            if(childs === 0){ No_RoomsC++
+                                break}
+                            No_RoomsC++
+                            if(childs < type.capacity.childs){No_RoomsC++
+                                break}
+                        } while ( childs != 0);
+                        if (No_RoomsA == No_RoomsC){No_Rooms = No_RoomsA}
+                        if (No_RoomsA > No_RoomsC){No_Rooms = No_RoomsA}
+                        if (No_RoomsA < No_RoomsC){No_Rooms = No_RoomsC}
+
+                        const rooms_type = await this.roomModel.find({hostal: hostal.name, type: type.type, date_arrival: "empty", date_departure: "empty"}).exec()
+
+                        if (No_Rooms > rooms_type.length) {
+                            Hostal_Array.Capacity_Array.push({_id: type._id, type: type.type, rooms: No_Rooms, total_price: 0, availability: " No se hay cuartos disponibles"})
                         }else{
-                            let adults = requesthostal.adults
-                            let childs = requesthostal.childs
-                            No_RoomsA = 0
-                            No_RoomsC = 0
-                            No_Rooms_Affi = 0
-
-                            do {
-                                if(type.capacity.adults > adults){No_RoomsA = 1
-                                    break}
-                                adults = adults - type.capacity.adults
-                                if(adults === 0){No_RoomsA++
-                                    break}
-                                No_RoomsA++
-                                if(adults < type.capacity.adults){No_RoomsA++
-                                    break}
-                            } while ( adults != 0);
-                            do {
-                                if(type.capacity.childs > childs){No_RoomsC = 1
-                                    break}
-                                childs = childs - type.capacity.childs
-                                if(childs === 0){ No_RoomsC++
-                                    break}
-                                No_RoomsC++
-                                if(childs < type.capacity.childs){No_RoomsC++
-                                    break}
-                            } while ( childs != 0);
-                            if (No_RoomsA == No_RoomsC){No_Rooms = No_RoomsA}
-                            if (No_RoomsA > No_RoomsC){No_Rooms = No_RoomsA}
-                            if (No_RoomsA < No_RoomsC){No_Rooms = No_RoomsC}
-
-                            const rooms_type = await this.roomModel.find({hostal: hostal.name, type: type.type, date_arrival: "empty", date_departure: "empty"}).exec()
-
-                            if (No_Rooms > rooms_type.length) {
-                                Hostal_Array.Capacity_Array.push({_id: type._id, type: type.type, rooms: No_Rooms, total_price: 0, availability: " No se hay cuartos disponibles"})
-                            }else{
-                                console.log("TIPO DE HABITACION " + type.type)
-                                console.log('NUMERO DE CUARTOS EN TOTAL ' + No_Rooms)
+                            console.log("TIPO DE HABITACION " + type.type)
+                            console.log('NUMERO DE CUARTOS EN TOTAL ' + No_Rooms)
+                            if (No_Rooms_Affi < rules.amount) { 
+                                No_Rooms_Affi = No_Rooms
+                                New_No_Rooms = 0 
+                            } else {
                                 No_Rooms_Affi = rules.amount
-                                let New_No_Rooms = No_Rooms - No_Rooms_Affi
-                                console.log('NUMERO DE CUARTOS SIN AFFI TYPE ' + New_No_Rooms)
-                                console.log('NUMERO DE CUARTOS Con AFFI TYPE ' + No_Rooms_Affi)
-
-                                if(requesthostal.affi_type == 1){
-                                    prices_hostal.forEach(type_price => {
-                                        if(type_price.affi_type == '1'){
-                                            const pricesdays = type_price.prices
-                                            ArrayDays.forEach(Day => {
-                                                pricesdays.forEach(priceday => {
-                                                    if (Day == 'Thursday') {
-                                                        if (priceday.title == 'Thursday/Friday') {
-                                                            priceday.price_per_type.forEach(price => {
-                                                                if (price.type == type.type) {
-                                                                    Total_Room_Affi = Total_Room_Affi + price.price
-                                                                }
-                                                            });
-                                                        }                                                    
-                                                    }else if (Day == 'Friday') {
-                                                        if (priceday.title == 'Friday-Saturday') {
-                                                            priceday.price_per_type.forEach(price => {
-                                                                if (price.type == type.type) {
-                                                                    Total_Room_Affi = Total_Room_Affi + price.price
-                                                                }
-                                                            });
-                                                        }                                                    
-                                                    }else if (Day == 'Saturday') {
-                                                        if (priceday.title == 'Saturday/DF/TA') {
-                                                            priceday.price_per_type.forEach(price => {
-                                                                if (price.type == type.type) {
-                                                                    Total_Room_Affi = Total_Room_Affi + price.price
-                                                                }
-                                                            });
-                                                        }                                                    
-                                                    }else{
-                                                        if (priceday.title == 'Sunday-Wednesday') {
-                                                            priceday.price_per_type.forEach(price => {
-                                                                if (price.type == type.type) {
-                                                                    Total_Room_Affi = Total_Room_Affi + price.price
-                                                                }
-                                                            });
-                                                        }
-                                                    }                                                
-                                                });
-                                            });
-                                        }
-                                        if(type_price.affi_type == '0'){
-                                            const pricesdays = type_price.prices
-                                            ArrayDays.forEach(Day => {
-                                                pricesdays.forEach(priceday => {
-                                                    if (Day == 'Thursday') {
-                                                        if (priceday.title == 'Thursday/Friday') {
-                                                            priceday.price_per_type.forEach(price => {
-                                                                if (price.type == type.type) {
-                                                                    Total_Room = Total_Room + price.price
-                                                                }
-                                                            });
-                                                        }                                                    
-                                                    }else if (Day == 'Friday') {
-                                                        if (priceday.title == 'Friday-Saturday') {
-                                                            priceday.price_per_type.forEach(price => {
-                                                                if (price.type == type.type) {
-                                                                    Total_Room = Total_Room + price.price
-                                                                }
-                                                            });
-                                                        }                                                    
-                                                    }else if (Day == 'Saturday') {
-                                                        if (priceday.title == 'Saturday/DF/TA') {
-                                                            priceday.price_per_type.forEach(price => {
-                                                                if (price.type == type.type) {
-                                                                    Total_Room = Total_Room + price.price
-                                                                }
-                                                            });
-                                                        }                                                    
-                                                    }else{
-                                                        if (priceday.title == 'Sunday-Wednesday') {
-                                                            priceday.price_per_type.forEach(price => {
-                                                                if (price.type == type.type) {
-                                                                    Total_Room = Total_Room + price.price
-                                                                }
-                                                            });
-                                                        }
-                                                    }                                               
-                                                });
-                                            });
-                                        }
-                                    });
-                                }
-
-                                Total_Price = (New_No_Rooms * Total_Room)+(No_Rooms_Affi * Total_Room_Affi)
-                                console.log('TOTAL A PAGAR POR CUARTO NO AFFI ' + Total_Room)
-                                console.log('TOTAL A PAGAR POR CUARTO AFFI ' + Total_Room_Affi)
-                                console.log('TOTAL GENERAL ' + Total_Price)
-                                Hostal_Array.Capacity_Array.push({_id: type._id, type: type.type, rooms: No_Rooms, total_price: Total_Price, availability: "Disponible"})
+                                New_No_Rooms = No_Rooms - No_Rooms_Affi
                             }
+                            
+                            console.log('NUMERO DE CUARTOS SIN AFFI TYPE ' + New_No_Rooms)
+                             console.log('NUMERO DE CUARTOS Con AFFI TYPE ' + No_Rooms_Affi)
+
+                            if(requesthostal.affi_type == 1){
+                                prices_hostal.forEach(type_price => {
+                                    if(type_price.affi_type == '1'){
+                                        const pricesdays = type_price.prices
+                                        ArrayDays.forEach(Day => {
+                                            pricesdays.forEach(priceday => {
+                                                if (Day == 'Thursday') {
+                                                    if (priceday.title == 'Thursday/Friday') {
+                                                        priceday.price_per_type.forEach(price => {
+                                                            if (price.type == type.type) {
+                                                                Total_Room_Affi = Total_Room_Affi + price.price
+                                                            }
+                                                        });
+                                                    }                                                    
+                                                }else if (Day == 'Friday') {
+                                                    if (priceday.title == 'Friday-Saturday') {
+                                                        priceday.price_per_type.forEach(price => {
+                                                            if (price.type == type.type) {
+                                                                Total_Room_Affi = Total_Room_Affi + price.price
+                                                            }
+                                                        });
+                                                    }                                                    
+                                                }else if (Day == 'Saturday') {
+                                                    if (priceday.title == 'Saturday/DF/TA') {
+                                                        priceday.price_per_type.forEach(price => {
+                                                            if (price.type == type.type) {
+                                                                Total_Room_Affi = Total_Room_Affi + price.price
+                                                            }
+                                                        });
+                                                    }                                                    
+                                                }else{
+                                                    if (priceday.title == 'Sunday-Wednesday') {
+                                                        priceday.price_per_type.forEach(price => {
+                                                            if (price.type == type.type) {
+                                                                Total_Room_Affi = Total_Room_Affi + price.price
+                                                            }
+                                                        });
+                                                    }
+                                                }                                                
+                                            });
+                                        });
+                                    }
+                                    if(type_price.affi_type == '0'){
+                                        const pricesdays = type_price.prices
+                                        ArrayDays.forEach(Day => {
+                                            pricesdays.forEach(priceday => {
+                                                if (Day == 'Thursday') {
+                                                    if (priceday.title == 'Thursday/Friday') {
+                                                        priceday.price_per_type.forEach(price => {
+                                                            if (price.type == type.type) {
+                                                                Total_Room = Total_Room + price.price
+                                                            }
+                                                        });
+                                                    }                                                    
+                                                }else if (Day == 'Friday') {
+                                                    if (priceday.title == 'Friday-Saturday') {
+                                                        priceday.price_per_type.forEach(price => {
+                                                            if (price.type == type.type) {
+                                                                Total_Room = Total_Room + price.price
+                                                            }
+                                                        });
+                                                    }                                                    
+                                                }else if (Day == 'Saturday') {
+                                                    if (priceday.title == 'Saturday/DF/TA') {
+                                                        priceday.price_per_type.forEach(price => {
+                                                            if (price.type == type.type) {
+                                                                Total_Room = Total_Room + price.price
+                                                            }
+                                                        });
+                                                    }                                                    
+                                                }else{
+                                                    if (priceday.title == 'Sunday-Wednesday') {
+                                                        priceday.price_per_type.forEach(price => {
+                                                            if (price.type == type.type) {
+                                                                Total_Room = Total_Room + price.price
+                                                            }
+                                                        });
+                                                    }
+                                                }                                               
+                                            });
+                                        });
+                                    }
+                                });
+                            }
+
+                            Total_Price = (New_No_Rooms * Total_Room)+(No_Rooms_Affi * Total_Room_Affi)
+                            console.log('TOTAL A PAGAR POR CUARTO NO AFFI ' + Total_Room)
+                            console.log('TOTAL A PAGAR POR CUARTO AFFI ' + Total_Room_Affi)
+                            console.log('TOTAL GENERAL ' + Total_Price)
+                            Hostal_Array.Capacity_Array.push({_id: type._id, type: type.type, rooms: No_Rooms, total_price: Total_Price, availability: "Disponible"})
                         }
-                    }))
+                    }
                 }));
             }          
         }));
